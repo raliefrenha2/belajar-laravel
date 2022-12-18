@@ -37,3 +37,20 @@ Route::get('/hello-again', function () {
 Route::get('hello-nested', function () {
     return view('nested.hello', ['name' => 'Romi Alief Rahman']);
 });
+
+Route::get('products/{id}', function ($productId) {
+    return "Produk $productId";
+});
+
+Route::get('products/{id}/items/{item_id}', function ($productId, $itemId) {
+    return "Produk $productId, item $itemId";
+});
+
+Route::get('/categories/{id}', function ($categoryId) {
+    return "Kategori $categoryId";
+})->where('id', '[0-9]+');
+
+// Optional Parameter
+Route::get('users/{id?}', function (string $userId = '404') {
+    return "User $userId";
+});
