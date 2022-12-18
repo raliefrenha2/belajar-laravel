@@ -27,3 +27,13 @@ Route::redirect('/youtube', '/test');
 Route::fallback(function () {
     return '404 by ai.romi';
 });
+
+Route::view('/hello', ['name' => 'Romi Alief Rahman']);
+
+Route::get('/hello-again', function () {
+    return view('hello', ['name' => 'Romi Alief Rahman']);
+});
+
+Route::get('hello-nested', function () {
+    return view('nested.hello', ['name' => 'Romi Alief Rahman']);
+});
