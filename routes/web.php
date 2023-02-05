@@ -54,3 +54,5 @@ Route::get('/categories/{id}', function ($categoryId) {
 Route::get('users/{id?}', function (string $userId = '404') {
     return "User $userId";
 });
+
+Route::get('controller/hello', [\App\Http\Controllers\HelloController::class, 'hello']);
