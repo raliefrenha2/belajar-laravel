@@ -2,8 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Data\Bar;
 use App\Data\Foo;
 use App\Data\Person;
+use App\Services\HelloService;
+use App\Services\HelloServiceIndonesia;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -11,7 +14,7 @@ use Tests\TestCase;
 class ServiceContainerTest extends TestCase
 {
 
-    public function testDepedencyInjection()
+    public function testDepedency()
     {
         $foo1 = $this->app->make(Foo::class); // new Foo()
         $foo2 = $this->app->make(Foo::class); // new Foo()
@@ -49,7 +52,7 @@ class ServiceContainerTest extends TestCase
         $person3 = $this->app->make(Person::class); // return existing
 
         self::assertEquals('Romi', $person1->firstname);
-        self::assertEquals('Romi', $person2->firstname); 
+        self::assertEquals('Romi', $person2->firstname);
         self::assertSame($person1, $person2);
     }
 
@@ -63,7 +66,80 @@ class ServiceContainerTest extends TestCase
         $person3 = $this->app->make(Person::class); // $person
 
         self::assertEquals('Romi', $person1->firstname);
-        self::assertEquals('Romi', $person2->firstname); 
+        self::assertEquals('Romi', $person2->firstname);
         self::assertSame($person1, $person2);
+    }
+
+    public function testDepedencyInjection()
+    {
+        $foo = $this->app->make(Foo::class);
+        $bar = $this->app->make(Bar::class);
+
+        self::assertNotSame($foo, $bar->foo);
+    }
+
+    public function testDepedencyInjectionSingleton()
+    {
+        $this->app->singleton(Foo::class, function ($app) {
+            return new Foo();
+        });
+
+        $foo = $this->app->make(Foo::class);
+        $bar = $this->app->make(Bar::class);
+
+        self::assertSame($foo, $bar->foo);
+    }
+
+    public function testDepedencyInjectionSingletonBarMake()
+    {
+        $this->app->singleton(Foo::class, function ($app) {
+            return new Foo();
+        });
+
+        $foo = $this->app->make(Foo::class);
+        $bar = $this->app->make(Bar::class);
+        $bar1 = $this->app->make(Bar::class);
+
+        self::assertSame($foo, $bar->foo);
+
+        self::assertNotSame($bar, $bar1);
+    }
+
+    public function testDepedencyInjectionSingletonDiClosure()
+    {
+        $this->app->singleton(Foo::class, function ($app) {
+            return new Foo();
+        });
+
+        // ambil foo yang di service container
+        $this->app->singleton(Bar::class, function ($app) {
+            return new Bar($app->make(Foo::class));
+        });
+
+        $foo = $this->app->make(Foo::class);
+        $bar = $this->app->make(Bar::class);
+        $bar1 = $this->app->make(Bar::class);
+
+        self::assertSame($foo, $bar->foo);
+
+        self::assertSame($bar, $bar1);
+    }
+
+    public function testInterfaceToClass()
+    {
+        // $helloService = $this->app->make(HelloService::class);
+
+        // self::assertEquals("Halo Romi", $helloService->hello('Romi'));
+
+
+        // $this->app->singleton(HelloService::class, HelloServiceIndonesia::class);
+        $this->app->singleton(HelloService::class, function ($app) {
+            return new HelloServiceIndonesia();
+        });
+
+        $helloService = $this->app->make(HelloService::class);
+
+        self::assertEquals("Halo Romi", $helloService->hello('Romi'));
+
     }
 }
